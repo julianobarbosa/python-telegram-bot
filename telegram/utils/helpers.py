@@ -57,7 +57,7 @@ else:
 def escape_markdown(text):
     """Helper function to escape telegram markup symbols."""
     escape_chars = '\*_`\['
-    return re.sub(r'([%s])' % escape_chars, r'\\\1', text)
+    return re.sub(f'([{escape_chars}])', r'\\\1', text)
 
 
 def to_timestamp(dt_obj):
@@ -69,10 +69,7 @@ def to_timestamp(dt_obj):
         int:
 
     """
-    if not dt_obj:
-        return None
-
-    return int(_timestamp(dt_obj))
+    return None if not dt_obj else int(_timestamp(dt_obj))
 
 
 def from_timestamp(unixtime):
@@ -84,10 +81,7 @@ def from_timestamp(unixtime):
         datetime.datetime:
 
     """
-    if not unixtime:
-        return None
-
-    return datetime.utcfromtimestamp(unixtime)
+    return None if not unixtime else datetime.utcfromtimestamp(unixtime)
 
 
 def mention_html(user_id, name):
@@ -100,7 +94,7 @@ def mention_html(user_id, name):
         :obj:`str`: The inline mention for the user as html.
     """
     if isinstance(user_id, int):
-        return u'<a href="tg://user?id={}">{}</a>'.format(user_id, escape(name))
+        return f'<a href="tg://user?id={user_id}">{escape(name)}</a>'
 
 
 def mention_markdown(user_id, name):
@@ -113,7 +107,7 @@ def mention_markdown(user_id, name):
         :obj:`str`: The inline mention for the user as markdown.
     """
     if isinstance(user_id, int):
-        return u'[{}](tg://user?id={})'.format(escape_markdown(name), user_id)
+        return f'[{escape_markdown(name)}](tg://user?id={user_id})'
 
 
 def effective_message_type(entity):
@@ -138,13 +132,11 @@ def effective_message_type(entity):
     elif isinstance(entity, Update):
         message = entity.effective_message
     else:
-        raise TypeError("entity is not Message or Update (got: {})".format(type(entity)))
+        raise TypeError(f"entity is not Message or Update (got: {type(entity)})")
 
-    for i in Message.MESSAGE_TYPES:
-        if getattr(message, i, None):
-            return i
-
-    return None
+    return next(
+        (i for i in Message.MESSAGE_TYPES if getattr(message, i, None)), None
+    )
 
 
 def create_deep_linked_url(bot_username, payload=None, group=False):
@@ -173,7 +165,7 @@ def create_deep_linked_url(bot_username, payload=None, group=False):
     if bot_username is None or len(bot_username) <= 3:
         raise ValueError("You must provide a valid bot_username.")
 
-    base_url = 'https://t.me/{}'.format(bot_username)
+    base_url = f'https://t.me/{bot_username}'
     if not payload:
         return base_url
 
@@ -184,11 +176,7 @@ def create_deep_linked_url(bot_username, payload=None, group=False):
         raise ValueError("Only the following characters are allowed for deep-linked "
                          "URLs: A-Z, a-z, 0-9, _ and -")
 
-    if group:
-        key = 'startgroup'
-    else:
-        key = 'start'
-
+    key = 'startgroup' if group else 'start'
     return '{0}?{1}={2}'.format(
         base_url,
         key,
@@ -206,11 +194,10 @@ def enocde_conversations_to_json(conversations):
     Returns:
         :obj:`str`: The JSON-serialized conversations dict
     """
-    tmp = {}
-    for handler, states in conversations.items():
-        tmp[handler] = {}
-        for key, state in states.items():
-            tmp[handler][json.dumps(key)] = state
+    tmp = {
+        handler: {json.dumps(key): state for key, state in states.items()}
+        for handler, states in conversations.items()
+    }
     return json.dumps(tmp)
 
 
@@ -225,12 +212,12 @@ def decode_conversations_from_json(json_string):
         :obj:`dict`: The conversations dict after decoding
     """
     tmp = json.loads(json_string)
-    conversations = {}
-    for handler, states in tmp.items():
-        conversations[handler] = {}
-        for key, state in states.items():
-            conversations[handler][tuple(json.loads(key))] = state
-    return conversations
+    return {
+        handler: {
+            tuple(json.loads(key)): state for key, state in states.items()
+        }
+        for handler, states in tmp.items()
+    }
 
 
 def decode_user_chat_data_from_json(data):

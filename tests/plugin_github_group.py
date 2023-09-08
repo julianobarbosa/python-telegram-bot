@@ -46,9 +46,7 @@ previous_name = None
 
 
 def _get_name(location):
-    if location[0].startswith('tests/'):
-        return location[0][6:]
-    return location[0]
+    return location[0][6:] if location[0].startswith('tests/') else location[0]
 
 
 @pytest.mark.trylast
@@ -69,7 +67,7 @@ def pytest_runtest_protocol(item, nextitem):
 
     if previous_name is None or previous_name != name:
         previous_name = name
-        terminal.write('\n##[group] {}'.format(name))
+        terminal.write(f'\n##[group] {name}')
 
     yield
 

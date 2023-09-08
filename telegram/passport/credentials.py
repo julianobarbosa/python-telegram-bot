@@ -39,8 +39,9 @@ class TelegramDecryptionError(TelegramError):
     """
 
     def __init__(self, message):
-        super(TelegramDecryptionError, self).__init__("TelegramDecryptionError: "
-                                                      "{}".format(message))
+        super(TelegramDecryptionError, self).__init__(
+            f"TelegramDecryptionError: {message}"
+        )
 
 
 def decrypt(secret, hash, data):
@@ -81,7 +82,7 @@ def decrypt(secret, hash, data):
     # If the newly calculated hash did not match the one telegram gave us
     if data_hash != hash:
         # Raise a error that is caught inside telegram.PassportData and transformed into a warning
-        raise TelegramDecryptionError("Hashes are not equal! {} != {}".format(data_hash, hash))
+        raise TelegramDecryptionError(f"Hashes are not equal! {data_hash} != {hash}")
     # Return data without padding
     return data[bord(data[0]):]
 
@@ -370,21 +371,11 @@ class _CredentialsBase(TelegramObject):
 
     @classmethod
     def de_json(cls, data, bot):
-        if not data:
-            return None
-
-        return cls(bot=bot, **data)
+        return None if not data else cls(bot=bot, **data)
 
     @classmethod
     def de_list(cls, data, bot):
-        if not data:
-            return []
-
-        credentials = list()
-        for c in data:
-            credentials.append(cls.de_json(c, bot=bot))
-
-        return credentials
+        return [] if not data else [cls.de_json(c, bot=bot) for c in data]
 
 
 class DataCredentials(_CredentialsBase):

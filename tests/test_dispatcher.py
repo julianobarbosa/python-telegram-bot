@@ -34,8 +34,7 @@ from collections import defaultdict
 
 @pytest.fixture(scope='function')
 def dp2(bot):
-    for dp in create_dp(bot):
-        yield dp
+    yield from create_dp(bot)
 
 
 class TestDispatcher(object):
@@ -434,7 +433,7 @@ class TestDispatcher(object):
         thread_names = [thread.name for thread in getattr(dp2, '_Dispatcher__async_threads')]
         print(thread_names)
         for thread_name in thread_names:
-            assert thread_name.startswith("Bot:{}:worker:".format(dp2.bot.id))
+            assert thread_name.startswith(f"Bot:{dp2.bot.id}:worker:")
 
     @pytest.mark.skipif(sys.version_info < (3, 0), reason='pytest fails this for no reason')
     def test_non_context_deprecation(self, dp):

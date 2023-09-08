@@ -307,11 +307,15 @@ class TestMessage(object):
         assert message.link is None
         message.chat.username = 'username'
         message.chat.type = 'supergroup'
-        assert message.link == 'https://t.me/{}/{}'.format(message.chat.username,
-                                                           message.message_id)
+        assert (
+            message.link
+            == f'https://t.me/{message.chat.username}/{message.message_id}'
+        )
         message.chat.type = 'channel'
-        assert message.link == 'https://t.me/{}/{}'.format(message.chat.username,
-                                                           message.message_id)
+        assert (
+            message.link
+            == f'https://t.me/{message.chat.username}/{message.message_id}'
+        )
         message.chat.type = 'private'
         assert message.link is None
 

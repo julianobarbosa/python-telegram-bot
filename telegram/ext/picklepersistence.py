@@ -80,9 +80,9 @@ class PicklePersistence(BasePersistence):
             self.user_data = defaultdict(dict)
             self.chat_data = defaultdict(dict)
         except pickle.UnpicklingError:
-            raise TypeError("File {} does not contain valid pickle data".format(filename))
+            raise TypeError(f"File {filename} does not contain valid pickle data")
         except Exception:
-            raise TypeError("Something went wrong unpickling {}".format(filename))
+            raise TypeError(f"Something went wrong unpickling {filename}")
 
     def load_file(self, filename):
         try:
@@ -91,9 +91,9 @@ class PicklePersistence(BasePersistence):
         except IOError:
             return None
         except pickle.UnpicklingError:
-            raise TypeError("File {} does not contain valid pickle data".format(filename))
+            raise TypeError(f"File {filename} does not contain valid pickle data")
         except Exception:
-            raise TypeError("Something went wrong unpickling {}".format(filename))
+            raise TypeError(f"Something went wrong unpickling {filename}")
 
     def dump_singlefile(self):
         with open(self.filename, "wb") as f:
@@ -114,12 +114,9 @@ class PicklePersistence(BasePersistence):
         if self.user_data:
             pass
         elif not self.single_file:
-            filename = "{}_user_data".format(self.filename)
+            filename = f"{self.filename}_user_data"
             data = self.load_file(filename)
-            if not data:
-                data = defaultdict(dict)
-            else:
-                data = defaultdict(dict, data)
+            data = defaultdict(dict) if not data else defaultdict(dict, data)
             self.user_data = data
         else:
             self.load_singlefile()
@@ -134,12 +131,9 @@ class PicklePersistence(BasePersistence):
         if self.chat_data:
             pass
         elif not self.single_file:
-            filename = "{}_chat_data".format(self.filename)
+            filename = f"{self.filename}_chat_data"
             data = self.load_file(filename)
-            if not data:
-                data = defaultdict(dict)
-            else:
-                data = defaultdict(dict, data)
+            data = defaultdict(dict) if not data else defaultdict(dict, data)
             self.chat_data = data
         else:
             self.load_singlefile()
@@ -157,7 +151,7 @@ class PicklePersistence(BasePersistence):
         if self.conversations:
             pass
         elif not self.single_file:
-            filename = "{}_conversations".format(self.filename)
+            filename = f"{self.filename}_conversations"
             data = self.load_file(filename)
             if not data:
                 data = {name: {}}
@@ -179,11 +173,11 @@ class PicklePersistence(BasePersistence):
             return
         self.conversations[name][key] = new_state
         if not self.on_flush:
-            if not self.single_file:
-                filename = "{}_conversations".format(self.filename)
-                self.dump_file(filename, self.conversations)
-            else:
+            if self.single_file:
                 self.dump_singlefile()
+            else:
+                filename = f"{self.filename}_conversations"
+                self.dump_file(filename, self.conversations)
 
     def update_user_data(self, user_id, data):
         """Will update the user_data (if changed) and depending on :attr:`on_flush` save the
@@ -197,11 +191,11 @@ class PicklePersistence(BasePersistence):
             return
         self.user_data[user_id] = data
         if not self.on_flush:
-            if not self.single_file:
-                filename = "{}_user_data".format(self.filename)
-                self.dump_file(filename, self.user_data)
-            else:
+            if self.single_file:
                 self.dump_singlefile()
+            else:
+                filename = f"{self.filename}_user_data"
+                self.dump_file(filename, self.user_data)
 
     def update_chat_data(self, chat_id, data):
         """Will update the chat_data (if changed) and depending on :attr:`on_flush` save the
@@ -215,11 +209,11 @@ class PicklePersistence(BasePersistence):
             return
         self.chat_data[chat_id] = data
         if not self.on_flush:
-            if not self.single_file:
-                filename = "{}_chat_data".format(self.filename)
-                self.dump_file(filename, self.chat_data)
-            else:
+            if self.single_file:
                 self.dump_singlefile()
+            else:
+                filename = f"{self.filename}_chat_data"
+                self.dump_file(filename, self.chat_data)
 
     def flush(self):
         """ Will save all data in memory to pickle file(s).
@@ -229,8 +223,8 @@ class PicklePersistence(BasePersistence):
                 self.dump_singlefile()
         else:
             if self.user_data:
-                self.dump_file("{}_user_data".format(self.filename), self.user_data)
+                self.dump_file(f"{self.filename}_user_data", self.user_data)
             if self.chat_data:
-                self.dump_file("{}_chat_data".format(self.filename), self.chat_data)
+                self.dump_file(f"{self.filename}_chat_data", self.chat_data)
             if self.conversations:
-                self.dump_file("{}_conversations".format(self.filename), self.conversations)
+                self.dump_file(f"{self.filename}_conversations", self.conversations)

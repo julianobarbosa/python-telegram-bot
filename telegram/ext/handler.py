@@ -145,7 +145,7 @@ class Handler(object):
             check_result: The result from check_update
 
         """
-        optional_args = dict()
+        optional_args = {}
 
         if self.pass_update_queue:
             optional_args['update_queue'] = dispatcher.update_queue

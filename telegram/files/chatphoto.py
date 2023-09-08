@@ -46,10 +46,7 @@ class ChatPhoto(TelegramObject):
 
     @classmethod
     def de_json(cls, data, bot):
-        if not data:
-            return None
-
-        return cls(bot=bot, **data)
+        return None if not data else cls(bot=bot, **data)
 
     def get_small_file(self, timeout=None, **kwargs):
         """Convenience wrapper over :attr:`telegram.Bot.get_file` for getting the

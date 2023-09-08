@@ -81,8 +81,8 @@ class JobQueue(object):
     def _put(self, job, next_t=None, last_t=None):
         if next_t is None:
             next_t = job.interval
-            if next_t is None:
-                raise ValueError('next_t is None')
+        if next_t is None:
+            raise ValueError('next_t is None')
 
         if isinstance(next_t, datetime.datetime):
             next_t = (next_t - datetime.datetime.now()).total_seconds()
@@ -295,8 +295,10 @@ class JobQueue(object):
         if not self._running:
             self._running = True
             self.__start_lock.release()
-            self.__thread = Thread(target=self._main_loop,
-                                   name="Bot:{}:job_queue".format(self._dispatcher.bot.id))
+            self.__thread = Thread(
+                target=self._main_loop,
+                name=f"Bot:{self._dispatcher.bot.id}:job_queue",
+            )
             self.__thread.start()
             self.logger.debug('%s thread started', self.__class__.__name__)
         else:

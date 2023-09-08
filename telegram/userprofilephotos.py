@@ -54,8 +54,5 @@ class UserProfilePhotos(TelegramObject):
     def to_dict(self):
         data = super(UserProfilePhotos, self).to_dict()
 
-        data['photos'] = []
-        for photo in self.photos:
-            data['photos'].append([x.to_dict() for x in photo])
-
+        data['photos'] = [[x.to_dict() for x in photo] for photo in self.photos]
         return data

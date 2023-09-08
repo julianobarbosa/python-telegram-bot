@@ -35,23 +35,17 @@ markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
 def facts_to_str(user_data):
-    facts = list()
-
-    for key, value in user_data.items():
-        facts.append('{} - {}'.format(key, value))
-
+    facts = [f'{key} - {value}' for key, value in user_data.items()]
     return "\n".join(facts).join(['\n', '\n'])
 
 
 def start(update, context):
-    reply_text = "Hi! My name is Doctor Botter."
-    if context.user_data:
-        reply_text += " You already told me your {}. Why don't you tell me something more " \
-                      "about yourself? Or change enything I " \
-                      "already know.".format(", ".join(context.user_data.keys()))
-    else:
-        reply_text += " I will hold a more complex conversation with you. Why don't you tell me " \
-                      "something about yourself?"
+    reply_text = "Hi! My name is Doctor Botter." + (
+        f""" You already told me your {", ".join(context.user_data.keys())}. Why don't you tell me something more about yourself? Or change enything I already know."""
+        if context.user_data
+        else " I will hold a more complex conversation with you. Why don't you tell me "
+        "something about yourself?"
+    )
     update.message.reply_text(reply_text, reply_markup=markup)
 
     return CHOOSING
@@ -61,10 +55,9 @@ def regular_choice(update, context):
     text = update.message.text.lower()
     context.user_data['choice'] = text
     if context.user_data.get(text):
-        reply_text = 'Your {}, I already know the following ' \
-                     'about that: {}'.format(text, context.user_data[text])
+        reply_text = f'Your {text}, I already know the following about that: {context.user_data[text]}'
     else:
-        reply_text = 'Your {}? Yes, I would love to hear about that!'.format(text)
+        reply_text = f'Your {text}? Yes, I would love to hear about that!'
     update.message.reply_text(reply_text)
 
     return TYPING_REPLY
@@ -83,27 +76,27 @@ def received_information(update, context):
     context.user_data[category] = text.lower()
     del context.user_data['choice']
 
-    update.message.reply_text("Neat! Just so you know, this is what you already told me:"
-                              "{}"
-                              "You can tell me more, or change your opinion on "
-                              "something.".format(facts_to_str(context.user_data)),
-                              reply_markup=markup)
+    update.message.reply_text(
+        f"Neat! Just so you know, this is what you already told me:{facts_to_str(context.user_data)}You can tell me more, or change your opinion on something.",
+        reply_markup=markup,
+    )
 
     return CHOOSING
 
 
 def show_data(update, context):
-    update.message.reply_text("This is what you already told me:"
-                              "{}".format(facts_to_str(context.user_data)))
+    update.message.reply_text(
+        f"This is what you already told me:{facts_to_str(context.user_data)}"
+    )
 
 
 def done(update, context):
     if 'choice' in context.user_data:
         del context.user_data['choice']
 
-    update.message.reply_text("I learned these facts about you:"
-                              "{}"
-                              "Until next time!".format(facts_to_str(context.user_data)))
+    update.message.reply_text(
+        f"I learned these facts about you:{facts_to_str(context.user_data)}Until next time!"
+    )
     return ConversationHandler.END
 
 

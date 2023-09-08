@@ -73,9 +73,7 @@ class User(TelegramObject):
     def name(self):
         """:obj:`str`: Convenience property. If available, returns the user's :attr:`username`
         prefixed with "@". If :attr:`username` is not available, returns :attr:`full_name`."""
-        if self.username:
-            return '@{}'.format(self.username)
-        return self.full_name
+        return f'@{self.username}' if self.username else self.full_name
 
     @property
     def full_name(self):
@@ -83,7 +81,7 @@ class User(TelegramObject):
         available) :attr:`last_name`."""
 
         if self.last_name:
-            return u'{} {}'.format(self.first_name, self.last_name)
+            return f'{self.first_name} {self.last_name}'
         return self.first_name
 
     @property
@@ -91,9 +89,7 @@ class User(TelegramObject):
         """:obj:`str`: Convenience property. If :attr:`username` is available, returns a t.me link
         of the user."""
 
-        if self.username:
-            return "https://t.me/{}".format(self.username)
-        return None
+        return f"https://t.me/{self.username}" if self.username else None
 
     @classmethod
     def de_json(cls, data, bot):
@@ -116,14 +112,7 @@ class User(TelegramObject):
 
     @classmethod
     def de_list(cls, data, bot):
-        if not data:
-            return []
-
-        users = list()
-        for user in data:
-            users.append(cls.de_json(user, bot))
-
-        return users
+        return [] if not data else [cls.de_json(user, bot) for user in data]
 
     def mention_markdown(self, name=None):
         """

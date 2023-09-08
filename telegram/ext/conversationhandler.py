@@ -183,9 +183,9 @@ class ConversationHandler(Handler):
         Set by dispatcher"""
         self.map_to_parent = map_to_parent
 
-        self.timeout_jobs = dict()
+        self.timeout_jobs = {}
         self._timeout_jobs_lock = Lock()
-        self.conversations = dict()
+        self.conversations = {}
         self._conversations_lock = Lock()
 
         self.logger = logging.getLogger(__name__)
@@ -197,7 +197,7 @@ class ConversationHandler(Handler):
             warnings.warn("If 'per_message=True' is used, 'per_chat=True' should also be used, "
                           "since message IDs are not globally unique.")
 
-        all_handlers = list()
+        all_handlers = []
         all_handlers.extend(entry_points)
         all_handlers.extend(fallbacks)
 
@@ -226,12 +226,12 @@ class ConversationHandler(Handler):
                     break
 
     def _get_key(self, update):
-        chat = update.effective_chat
         user = update.effective_user
 
-        key = list()
+        key = []
 
         if self.per_chat:
+            chat = update.effective_chat
             key.append(chat.id)
 
         if self.per_user and user is not None:
@@ -278,7 +278,7 @@ class ConversationHandler(Handler):
                     res = res if res is not None else old_state
                 except Exception as exc:
                     self.logger.exception("Promise function raised exception")
-                    self.logger.exception("{}".format(exc))
+                    self.logger.exception(f"{exc}")
                     res = old_state
                 finally:
                     if res is None and old_state is None:
@@ -294,7 +294,7 @@ class ConversationHandler(Handler):
                         return key, handler, check
                 return None
 
-        self.logger.debug('selecting conversation %s with state %s' % (str(key), str(state)))
+        self.logger.debug(f'selecting conversation {str(key)} with state {str(state)}')
 
         handler = None
 

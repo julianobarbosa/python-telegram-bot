@@ -51,7 +51,7 @@ class InputFile(object):
     def __init__(self, obj, filename=None, attach=None):
         self.filename = None
         self.input_file_content = obj.read()
-        self.attach = 'attached' + uuid4().hex if attach else None
+        self.attach = f'attached{uuid4().hex}' if attach else None
 
         if filename:
             self.filename = filename
@@ -88,9 +88,8 @@ class InputFile(object):
             :obj:`str`: The str mime-type of an image.
 
         """
-        image = imghdr.what(None, stream)
-        if image:
-            return 'image/%s' % image
+        if image := imghdr.what(None, stream):
+            return f'image/{image}'
 
         raise TelegramError('Could not parse file content')
 
@@ -100,4 +99,4 @@ class InputFile(object):
 
     def to_dict(self):
         if self.attach:
-            return 'attach://' + self.attach
+            return f'attach://{self.attach}'

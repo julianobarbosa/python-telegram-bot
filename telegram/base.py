@@ -57,7 +57,7 @@ class TelegramObject(object):
         return json.dumps(self.to_dict())
 
     def to_dict(self):
-        data = dict()
+        data = {}
 
         for key in iter(self.__dict__):
             if key in ('bot',
@@ -70,11 +70,7 @@ class TelegramObject(object):
 
             value = self.__dict__[key]
             if value is not None:
-                if hasattr(value, 'to_dict'):
-                    data[key] = value.to_dict()
-                else:
-                    data[key] = value
-
+                data[key] = value.to_dict() if hasattr(value, 'to_dict') else value
         if data.get('from_user'):
             data['from'] = data.pop('from_user', None)
         return data

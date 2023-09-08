@@ -43,10 +43,10 @@ class InlineKeyboardMarkup(ReplyMarkup):
     def to_dict(self):
         data = super(InlineKeyboardMarkup, self).to_dict()
 
-        data['inline_keyboard'] = []
-        for inline_keyboard in self.inline_keyboard:
-            data['inline_keyboard'].append([x.to_dict() for x in inline_keyboard])
-
+        data['inline_keyboard'] = [
+            [x.to_dict() for x in inline_keyboard]
+            for inline_keyboard in self.inline_keyboard
+        ]
         return data
 
     @classmethod
@@ -55,9 +55,7 @@ class InlineKeyboardMarkup(ReplyMarkup):
             return None
         keyboard = []
         for row in data['inline_keyboard']:
-            tmp = []
-            for col in row:
-                tmp.append(InlineKeyboardButton.de_json(col, bot))
+            tmp = [InlineKeyboardButton.de_json(col, bot) for col in row]
             keyboard.append(tmp)
 
         return cls(keyboard)

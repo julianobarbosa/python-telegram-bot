@@ -131,13 +131,11 @@ class InlineQueryHandler(Handler):
         """
 
         if isinstance(update, Update) and update.inline_query:
-            if self.pattern:
-                if update.inline_query.query:
-                    match = re.match(self.pattern, update.inline_query.query)
-                    if match:
-                        return match
-            else:
+            if not self.pattern:
                 return True
+            if update.inline_query.query:
+                if match := re.match(self.pattern, update.inline_query.query):
+                    return match
 
     def collect_optional_args(self, dispatcher, update=None, check_result=None):
         optional_args = super(InlineQueryHandler, self).collect_optional_args(dispatcher,

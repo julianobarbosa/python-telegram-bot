@@ -25,8 +25,10 @@ def error(update, context):
 
 
 def start_callback(update, context):
-    msg = "Use /shipping to get an invoice for shipping-payment, "
-    msg += "or /noshipping for an invoice without shipping."
+    msg = (
+        "Use /shipping to get an invoice for shipping-payment, "
+        + "or /noshipping for an invoice without shipping."
+    )
     update.message.reply_text(msg)
 
 
@@ -83,9 +85,7 @@ def shipping_callback(update, context):
         query.answer(ok=False, error_message="Something went wrong...")
         return
     else:
-        options = list()
-        # a single LabeledPrice
-        options.append(ShippingOption('1', 'Shipping Option A', [LabeledPrice('A', 100)]))
+        options = [ShippingOption('1', 'Shipping Option A', [LabeledPrice('A', 100)])]
         # an array of LabeledPrice objects
         price_list = [LabeledPrice('B1', 150), LabeledPrice('B2', 200)]
         options.append(ShippingOption('2', 'Shipping Option B', price_list))

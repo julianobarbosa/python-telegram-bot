@@ -108,8 +108,7 @@ class StringRegexHandler(Handler):
 
         """
         if isinstance(update, string_types):
-            match = re.match(self.pattern, update)
-            if match:
+            if match := re.match(self.pattern, update):
                 return match
 
     def collect_optional_args(self, dispatcher, update=None, check_result=None):

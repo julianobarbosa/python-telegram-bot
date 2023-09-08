@@ -44,7 +44,4 @@ class Location(TelegramObject):
 
     @classmethod
     def de_json(cls, data, bot):
-        if not data:
-            return None
-
-        return cls(**data)
+        return None if not data else cls(**data)

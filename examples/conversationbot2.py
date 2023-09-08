@@ -35,11 +35,7 @@ markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
 def facts_to_str(user_data):
-    facts = list()
-
-    for key, value in user_data.items():
-        facts.append('{} - {}'.format(key, value))
-
+    facts = [f'{key} - {value}' for key, value in user_data.items()]
     return "\n".join(facts).join(['\n', '\n'])
 
 
@@ -56,7 +52,8 @@ def regular_choice(update, context):
     text = update.message.text
     context.user_data['choice'] = text
     update.message.reply_text(
-        'Your {}? Yes, I would love to hear about that!'.format(text.lower()))
+        f'Your {text.lower()}? Yes, I would love to hear about that!'
+    )
 
     return TYPING_REPLY
 
@@ -75,10 +72,10 @@ def received_information(update, context):
     user_data[category] = text
     del user_data['choice']
 
-    update.message.reply_text("Neat! Just so you know, this is what you already told me:"
-                              "{} You can tell me more, or change your opinion"
-                              " on something.".format(facts_to_str(user_data)),
-                              reply_markup=markup)
+    update.message.reply_text(
+        f"Neat! Just so you know, this is what you already told me:{facts_to_str(user_data)} You can tell me more, or change your opinion on something.",
+        reply_markup=markup,
+    )
 
     return CHOOSING
 
@@ -88,9 +85,9 @@ def done(update, context):
     if 'choice' in user_data:
         del user_data['choice']
 
-    update.message.reply_text("I learned these facts about you:"
-                              "{}"
-                              "Until next time!".format(facts_to_str(user_data)))
+    update.message.reply_text(
+        f"I learned these facts about you:{facts_to_str(user_data)}Until next time!"
+    )
 
     user_data.clear()
     return ConversationHandler.END

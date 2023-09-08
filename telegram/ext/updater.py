@@ -157,8 +157,12 @@ class Updater(object):
         self.__threads = []
 
     def _init_thread(self, target, name, *args, **kwargs):
-        thr = Thread(target=self._thread_wrapper, name="Bot:{}:{}".format(self.bot.id, name),
-                     args=(target,) + args, kwargs=kwargs)
+        thr = Thread(
+            target=self._thread_wrapper,
+            name=f"Bot:{self.bot.id}:{name}",
+            args=(target,) + args,
+            kwargs=kwargs,
+        )
         thr.start()
         self.__threads.append(thr)
 
@@ -498,8 +502,9 @@ class Updater(object):
     def signal_handler(self, signum, frame):
         self.is_idle = False
         if self.running:
-            self.logger.info('Received signal {} ({}), stopping...'.format(
-                signum, get_signal_name(signum)))
+            self.logger.info(
+                f'Received signal {signum} ({get_signal_name(signum)}), stopping...'
+            )
             if self.persistence:
                 # Update user_data and chat_data before flushing
                 self.dispatcher.update_persistence()

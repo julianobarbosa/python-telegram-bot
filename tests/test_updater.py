@@ -337,7 +337,7 @@ class TestUpdater(object):
             updater.idle()
 
         rec = caplog.records[-1]
-        assert rec.msg.startswith('Received signal {}'.format(signal.SIGTERM))
+        assert rec.msg.startswith(f'Received signal {signal.SIGTERM}')
         assert rec.levelname == 'INFO'
 
         # If we get this far, idle() ran through

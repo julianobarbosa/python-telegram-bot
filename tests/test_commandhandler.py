@@ -95,13 +95,13 @@ class BaseTest(object):
 
     def callback_context_regex1(self, update, context):
         if context.matches:
-            types = all([type(res) == self.SRE_TYPE for res in context.matches])
+            types = all(type(res) == self.SRE_TYPE for res in context.matches)
             num = len(context.matches) == 1
             self.test_flag = types and num
 
     def callback_context_regex2(self, update, context):
         if context.matches:
-            types = all([type(res) == self.SRE_TYPE for res in context.matches])
+            types = all(type(res) == self.SRE_TYPE for res in context.matches)
             num = len(context.matches) == 2
             self.test_flag = types and num
 
@@ -149,7 +149,7 @@ class TestCommandHandler(BaseTest):
     def ch_callback_args(self, bot, update, args):
         if update.message.text == self.CMD:
             self.test_flag = len(args) == 0
-        elif update.message.text == '{}@{}'.format(self.CMD, bot.username):
+        elif update.message.text == f'{self.CMD}@{bot.username}':
             self.test_flag = len(args) == 0
         else:
             self.test_flag = args == ['one', 'two']
@@ -166,8 +166,8 @@ class TestCommandHandler(BaseTest):
 
         assert self.response(dp, make_command_update(command))
         assert not is_match(handler, make_command_update(command[1:]))
-        assert not is_match(handler, make_command_update('/not{}'.format(command[1:])))
-        assert not is_match(handler, make_command_update('not {} at start'.format(command)))
+        assert not is_match(handler, make_command_update(f'/not{command[1:]}'))
+        assert not is_match(handler, make_command_update(f'not {command} at start'))
 
     @pytest.mark.parametrize('cmd',
                              ['way_too_longcommand1234567yes_way_toooooooLong', 'ïñválídletters',
@@ -204,8 +204,12 @@ class TestCommandHandler(BaseTest):
     def test_directed_commands(self, bot, command):
         """Test recognition of commands with a mention to the bot"""
         handler = self.make_default_handler()
-        assert is_match(handler, make_command_update(command + '@' + bot.username, bot=bot))
-        assert not is_match(handler, make_command_update(command + '@otherbot', bot=bot))
+        assert is_match(
+            handler, make_command_update(f'{command}@{bot.username}', bot=bot)
+        )
+        assert not is_match(
+            handler, make_command_update(f'{command}@otherbot', bot=bot)
+        )
 
     def test_with_filter(self, command):
         """Test that a CH with a (generic) filter responds iff its filters match"""
@@ -217,11 +221,11 @@ class TestCommandHandler(BaseTest):
         """Test the passing of arguments alongside a command"""
         handler = self.make_default_handler(self.ch_callback_args, pass_args=True)
         dp.add_handler(handler)
-        at_command = '{}@{}'.format(command, bot.username)
+        at_command = f'{command}@{bot.username}'
         assert self.response(dp, make_command_update(command))
-        assert self.response(dp, make_command_update(command + ' one two'))
+        assert self.response(dp, make_command_update(f'{command} one two'))
         assert self.response(dp, make_command_update(at_command, bot=bot))
-        assert self.response(dp, make_command_update(at_command + ' one two', bot=bot))
+        assert self.response(dp, make_command_update(f'{at_command} one two', bot=bot))
 
     def test_newline(self, dp, command):
         """Assert that newlines don't interfere with a command handler matching a message"""
@@ -330,8 +334,8 @@ class TestPrefixHandler(BaseTest):
 
         assert self.response(dp, make_message_update(text))
         assert not is_match(handler, make_message_update(command))
-        assert not is_match(handler, make_message_update(prefix + 'notacommand'))
-        assert not is_match(handler, make_command_update('not {} at start'.format(text)))
+        assert not is_match(handler, make_message_update(f'{prefix}notacommand'))
+        assert not is_match(handler, make_command_update(f'not {text} at start'))
 
     def test_single_multi_prefixes_commands(self, prefixes, commands, prefix_message_update):
         """Test various combinations of prefixes and commands"""
@@ -356,7 +360,7 @@ class TestPrefixHandler(BaseTest):
         dp.add_handler(handler)
         assert self.response(dp, make_message_update(prefix_message))
 
-        update_with_args = make_message_update(prefix_message.text + ' one two')
+        update_with_args = make_message_update(f'{prefix_message.text} one two')
         assert self.response(dp, update_with_args)
 
     @pytest.mark.parametrize('pass_keyword', BaseTest.PASS_KEYWORDS)

@@ -29,11 +29,7 @@ def _lstrip_str(in_s, lstr):
         str:
 
     """
-    if in_s.startswith(lstr):
-        res = in_s[len(lstr):]
-    else:
-        res = in_s
-    return res
+    return in_s[len(lstr):] if in_s.startswith(lstr) else in_s
 
 
 class TelegramError(Exception):
@@ -49,7 +45,7 @@ class TelegramError(Exception):
         self.message = msg
 
     def __str__(self):
-        return '%s' % (self.message)
+        return f'{self.message}'
 
 
 class Unauthorized(TelegramError):
@@ -82,8 +78,9 @@ class ChatMigrated(TelegramError):
     """
 
     def __init__(self, new_chat_id):
-        super(ChatMigrated,
-              self).__init__('Group migrated to supergroup. New chat id: {}'.format(new_chat_id))
+        super(ChatMigrated, self).__init__(
+            f'Group migrated to supergroup. New chat id: {new_chat_id}'
+        )
         self.new_chat_id = new_chat_id
 
 
@@ -95,8 +92,9 @@ class RetryAfter(TelegramError):
     """
 
     def __init__(self, retry_after):
-        super(RetryAfter,
-              self).__init__('Flood control exceeded. Retry in {} seconds'.format(retry_after))
+        super(RetryAfter, self).__init__(
+            f'Flood control exceeded. Retry in {retry_after} seconds'
+        )
         self.retry_after = float(retry_after)
 
 

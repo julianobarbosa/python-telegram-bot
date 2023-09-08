@@ -43,7 +43,7 @@ class TestDelayQueue(object):
                             autostart=True)
         assert dsp.is_alive() is True
 
-        for i in range(self.N):
+        for _ in range(self.N):
             dsp(self.call)
 
         starttime = mq.curtime()
@@ -65,4 +65,4 @@ class TestDelayQueue(object):
                 passes.append(part)
             else:
                 fails.append(part)
-        assert fails == []
+        assert not fails

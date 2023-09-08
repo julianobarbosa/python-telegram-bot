@@ -29,9 +29,8 @@ from telegram import Sticker, PhotoSize, TelegramError, StickerSet, Audio, MaskP
 
 @pytest.fixture(scope='function')
 def sticker_file():
-    f = open('tests/data/telegram.webp', 'rb')
-    yield f
-    f.close()
+    with open('tests/data/telegram.webp', 'rb') as f:
+        yield f
 
 
 @pytest.fixture(scope='class')

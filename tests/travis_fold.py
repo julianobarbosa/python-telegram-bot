@@ -51,7 +51,7 @@ durations = defaultdict(int)
 
 
 def _get_name(location):
-    return '{}::{}'.format(location[0], location[2].split('.')[0].split('[')[0])
+    return f"{location[0]}::{location[2].split('.')[0].split('[')[0]}"
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
@@ -78,8 +78,8 @@ def pytest_runtest_protocol(item, nextitem):
 
     if previous_name is None or previous_name != name:
         previous_name = name
-        terminal.write('\ntravis_fold:start:{}\r'.format(name.split('::')[1]))
-        terminal.write('travis_time:start:{}time\r'.format(name.split('::')[1]))
+        terminal.write(f"\ntravis_fold:start:{name.split('::')[1]}\r")
+        terminal.write(f"travis_time:start:{name.split('::')[1]}time\r")
         terminal.write(name)
 
     yield
@@ -89,8 +89,8 @@ def pytest_runtest_protocol(item, nextitem):
         if name in failed:
             terminal.write('')
         else:
-            terminal.write('\n\ntravis_fold:end:{}'.format(name.split('::')[1]))
-        terminal.write('\rtravis_time:end:{}time:'
-                       'duration={}'.format(name.split('::')[1],
-                                            int(durations[name] * 1E9)))
+            terminal.write(f"\n\ntravis_fold:end:{name.split('::')[1]}")
+        terminal.write(
+            f"\rtravis_time:end:{name.split('::')[1]}time:duration={int(durations[name] * 1000000000.0)}"
+        )
         time.sleep(0.001)  # Tiny sleep so travis hopefully doesn't mangle the log

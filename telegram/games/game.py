@@ -69,7 +69,7 @@ class Game(TelegramObject):
         self.description = description
         self.photo = photo
         self.text = text
-        self.text_entities = text_entities or list()
+        self.text_entities = text_entities or []
         self.animation = animation
 
     @classmethod
@@ -110,12 +110,10 @@ class Game(TelegramObject):
             :obj:`str`: The text of the given entity.
 
         """
-        # Is it a narrow build, if so we don't need to convert
         if sys.maxunicode == 0xffff:
             return self.text[entity.offset:entity.offset + entity.length]
-        else:
-            entity_text = self.text.encode('utf-16-le')
-            entity_text = entity_text[entity.offset * 2:(entity.offset + entity.length) * 2]
+        entity_text = self.text.encode('utf-16-le')
+        entity_text = entity_text[entity.offset * 2:(entity.offset + entity.length) * 2]
 
         return entity_text.decode('utf-16-le')
 

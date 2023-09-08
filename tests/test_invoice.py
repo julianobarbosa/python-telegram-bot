@@ -112,8 +112,10 @@ class TestInvoice(object):
 
     def test_send_object_as_provider_data(self, monkeypatch, bot, chat_id, provider_token):
         def test(_, url, data, **kwargs):
-            return (data['provider_data'] == '{"test_data": 123456789}'  # Depends if using
-                    or data['provider_data'] == '{"test_data":123456789}')  # ujson or not
+            return data['provider_data'] in [
+                '{"test_data": 123456789}',
+                '{"test_data":123456789}',
+            ]
 
         monkeypatch.setattr('telegram.utils.request.Request.post', test)
 
