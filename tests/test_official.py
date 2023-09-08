@@ -39,13 +39,15 @@ def find_next_sibling_until(tag, name, until):
 
 
 def parse_table(h4):
-    table = find_next_sibling_until(h4, 'table', h4.find_next_sibling('h4'))
-    if not table:
+    if table := find_next_sibling_until(
+        h4, 'table', h4.find_next_sibling('h4')
+    ):
+        return [
+            [td.text for td in tr.find_all('td')]
+            for tr in table.find_all('tr')[1:]
+        ]
+    else:
         return []
-    t = []
-    for tr in table.find_all('tr')[1:]:
-        t.append([td.text for td in tr.find_all('td')])
-    return t
 
 
 def check_method(h4):
@@ -59,8 +61,9 @@ def check_method(h4):
     checked = []
     for parameter in table:
         param = sig.parameters.get(parameter[0])
-        assert param is not None, "Parameter {} not found in {}".format(parameter[0],
-                                                                        method.__name__)
+        assert (
+            param is not None
+        ), f"Parameter {parameter[0]} not found in {method.__name__}"
         # TODO: Check type via docstring
         # TODO: Check if optional or required
         checked.append(parameter[0])
@@ -104,7 +107,7 @@ def check_object(h4):
             continue
 
         param = sig.parameters.get(field)
-        assert param is not None, "Attribute {} not found in {}".format(field, obj.__name__)
+        assert param is not None, f"Attribute {field} not found in {obj.__name__}"
         # TODO: Check type via docstring
         # TODO: Check if optional or required
         checked.append(field)

@@ -97,10 +97,7 @@ class Sticker(TelegramObject):
 
     @classmethod
     def de_list(cls, data, bot):
-        if not data:
-            return list()
-
-        return [cls.de_json(d, bot) for d in data]
+        return [] if not data else [cls.de_json(d, bot) for d in data]
 
     def get_file(self, timeout=None, **kwargs):
         """Convenience wrapper over :attr:`telegram.Bot.get_file`
@@ -211,7 +208,4 @@ class MaskPosition(TelegramObject):
 
     @classmethod
     def de_json(cls, data, bot):
-        if data is None:
-            return None
-
-        return cls(**data)
+        return None if data is None else cls(**data)

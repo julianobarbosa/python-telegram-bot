@@ -55,9 +55,9 @@ class TestUpdate(object):
 
     @pytest.mark.parametrize('paramdict', argvalues=params, ids=ids)
     def test_de_json(self, bot, paramdict):
-        json_dict = {'update_id': TestUpdate.update_id}
-        # Convert the single update 'item' to a dict of that item and apply it to the json_dict
-        json_dict.update({k: v.to_dict() for k, v in paramdict.items()})
+        json_dict = {'update_id': TestUpdate.update_id} | {
+            k: v.to_dict() for k, v in paramdict.items()
+        }
         update = Update.de_json(json_dict, bot)
 
         assert update.update_id == self.update_id
@@ -87,13 +87,17 @@ class TestUpdate(object):
     def test_effective_chat(self, update):
         # Test that it's sometimes None per docstring
         chat = update.effective_chat
-        if not (update.inline_query is not None
-                or update.chosen_inline_result is not None
-                or (update.callback_query is not None
-                    and update.callback_query.message is None)
-                or update.shipping_query is not None
-                or update.pre_checkout_query is not None
-                or update.poll is not None):
+        if (
+            update.inline_query is None
+            and update.chosen_inline_result is None
+            and (
+                update.callback_query is None
+                or update.callback_query.message is not None
+            )
+            and update.shipping_query is None
+            and update.pre_checkout_query is None
+            and update.poll is None
+        ):
             assert chat.id == 1
         else:
             assert chat is None
@@ -101,9 +105,11 @@ class TestUpdate(object):
     def test_effective_user(self, update):
         # Test that it's sometimes None per docstring
         user = update.effective_user
-        if not (update.channel_post is not None
-                or update.edited_channel_post is not None
-                or update.poll is not None):
+        if (
+            update.channel_post is None
+            and update.edited_channel_post is None
+            and update.poll is None
+        ):
             assert user.id == 1
         else:
             assert user is None
@@ -111,13 +117,17 @@ class TestUpdate(object):
     def test_effective_message(self, update):
         # Test that it's sometimes None per docstring
         eff_message = update.effective_message
-        if not (update.inline_query is not None
-                or update.chosen_inline_result is not None
-                or (update.callback_query is not None
-                    and update.callback_query.message is None)
-                or update.shipping_query is not None
-                or update.pre_checkout_query is not None
-                or update.poll is not None):
+        if (
+            update.inline_query is None
+            and update.chosen_inline_result is None
+            and (
+                update.callback_query is None
+                or update.callback_query.message is not None
+            )
+            and update.shipping_query is None
+            and update.pre_checkout_query is None
+            and update.poll is None
+        ):
             assert eff_message.message_id == message.message_id
         else:
             assert eff_message is None

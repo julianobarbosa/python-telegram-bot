@@ -55,7 +55,7 @@ def _render_part(self, name, value):
     """
     value = value.replace(u'\\', u'\\\\').replace(u'"', u'\\"')
     value = value.replace(u'\r', u' ').replace(u'\n', u' ')
-    return u'%s="%s"' % (name, value)
+    return f'{name}="{value}"'
 
 
 RequestField._render_part = _render_part
@@ -92,7 +92,7 @@ class Request(object):
                  connect_timeout=5.,
                  read_timeout=5.):
         if urllib3_proxy_kwargs is None:
-            urllib3_proxy_kwargs = dict()
+            urllib3_proxy_kwargs = {}
 
         self._connect_timeout = connect_timeout
 
@@ -127,14 +127,8 @@ class Request(object):
         if not proxy_url:
             proxy_url = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
 
-        if not proxy_url:
-            if appengine.is_appengine_sandbox():
-                # Use URLFetch service if running in App Engine
-                mgr = appengine.AppEngineManager()
-            else:
-                mgr = urllib3.PoolManager(**kwargs)
-        else:
-            kwargs.update(urllib3_proxy_kwargs)
+        if proxy_url:
+            kwargs |= urllib3_proxy_kwargs
             if proxy_url.startswith('socks'):
                 try:
                     from telegram.vendor.ptb_urllib3.urllib3.contrib.socks import SOCKSProxyManager
@@ -148,6 +142,11 @@ class Request(object):
                     auth_hdrs = urllib3.make_headers(proxy_basic_auth=mgr.proxy.auth)
                     mgr.proxy_headers.update(auth_hdrs)
 
+        elif appengine.is_appengine_sandbox():
+            # Use URLFetch service if running in App Engine
+            mgr = appengine.AppEngineManager()
+        else:
+            mgr = urllib3.PoolManager(**kwargs)
         self._con_pool = mgr
 
     @property
@@ -179,13 +178,10 @@ class Request(object):
 
         if not data.get('ok'):  # pragma: no cover
             description = data.get('description')
-            parameters = data.get('parameters')
-            if parameters:
-                migrate_to_chat_id = parameters.get('migrate_to_chat_id')
-                if migrate_to_chat_id:
+            if parameters := data.get('parameters'):
+                if migrate_to_chat_id := parameters.get('migrate_to_chat_id'):
                     raise ChatMigrated(migrate_to_chat_id)
-                retry_after = parameters.get('retry_after')
-                if retry_after:
+                if retry_after := parameters.get('retry_after'):
                     raise RetryAfter(retry_after)
             if description:
                 return description

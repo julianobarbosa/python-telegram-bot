@@ -124,9 +124,7 @@ class Chat(TelegramObject):
     def link(self):
         """:obj:`str`: Convenience property. If the chat has a :attr:`username`, returns a t.me
         link of the chat."""
-        if self.username:
-            return "https://t.me/{}".format(self.username)
-        return None
+        return f"https://t.me/{self.username}" if self.username else None
 
     @classmethod
     def de_json(cls, data, bot):

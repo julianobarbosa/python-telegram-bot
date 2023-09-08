@@ -163,25 +163,28 @@ class CommandHandler(Handler):
             :obj:`list`: The list of args for the handler
 
         """
-        if isinstance(update, Update) and update.effective_message:
-            message = update.effective_message
+        if not isinstance(update, Update) or not update.effective_message:
+            return
+        message = update.effective_message
 
-            if (message.entities and message.entities[0].type == MessageEntity.BOT_COMMAND
+        if (message.entities and message.entities[0].type == MessageEntity.BOT_COMMAND
                     and message.entities[0].offset == 0):
-                command = message.text[1:message.entities[0].length]
-                args = message.text.split()[1:]
-                command = command.split('@')
-                command.append(message.bot.username)
+            command = message.text[1:message.entities[0].length]
+            args = message.text.split()[1:]
+            command = command.split('@')
+            command.append(message.bot.username)
 
-                if not (command[0].lower() in self.command
-                        and command[1].lower() == message.bot.username.lower()):
-                    return None
+            if (
+                command[0].lower() not in self.command
+                or command[1].lower() != message.bot.username.lower()
+            ):
+                return None
 
-                filter_result = self.filters(update)
-                if filter_result:
-                    return args, filter_result
-                else:
-                    return False
+            return (
+                (args, filter_result)
+                if (filter_result := self.filters(update))
+                else False
+            )
 
     def collect_optional_args(self, dispatcher, update=None, check_result=None):
         optional_args = super(CommandHandler, self).collect_optional_args(dispatcher, update)
@@ -309,10 +312,7 @@ class PrefixHandler(CommandHandler):
             pass_user_data=pass_user_data,
             pass_chat_data=pass_chat_data)
 
-        if isinstance(prefix, string_types):
-            self.prefix = [prefix.lower()]
-        else:
-            self.prefix = prefix
+        self.prefix = [prefix.lower()] if isinstance(prefix, string_types) else prefix
         if isinstance(command, string_types):
             self.command = [command.lower()]
         else:
@@ -336,8 +336,7 @@ class PrefixHandler(CommandHandler):
                 text_list = message.text.split()
                 if text_list[0].lower() not in self.command:
                     return None
-                filter_result = self.filters(update)
-                if filter_result:
+                if filter_result := self.filters(update):
                     return text_list[1:], filter_result
                 else:
                     return False

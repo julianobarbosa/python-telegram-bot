@@ -80,7 +80,7 @@ class TestChat(object):
         assert chat_dict['permissions'] == chat.permissions.to_dict()
 
     def test_link(self, chat):
-        assert chat.link == 'https://t.me/{}'.format(chat.username)
+        assert chat.link == f'https://t.me/{chat.username}'
         chat.username = None
         assert chat.link is None
 

@@ -29,7 +29,7 @@ def start(update, context):
 def button(update, context):
     query = update.callback_query
 
-    query.edit_message_text(text="Selected option: {}".format(query.data))
+    query.edit_message_text(text=f"Selected option: {query.data}")
 
 
 def help(update, context):

@@ -163,11 +163,13 @@ class Dispatcher(object):
                 self._set_singleton(None)
 
     def _init_async_threads(self, base_name, workers):
-        base_name = '{}_'.format(base_name) if base_name else ''
+        base_name = f'{base_name}_' if base_name else ''
 
         for i in range(workers):
-            thread = Thread(target=self._pooled, name='Bot:{}:worker:{}{}'.format(self.bot.id,
-                                                                                  base_name, i))
+            thread = Thread(
+                target=self._pooled,
+                name=f'Bot:{self.bot.id}:worker:{base_name}{i}',
+            )
             self.__async_threads.add(thread)
             thread.start()
 
@@ -190,8 +192,9 @@ class Dispatcher(object):
         if cls.__singleton is not None:
             return cls.__singleton()  # pylint: disable=not-callable
         else:
-            raise RuntimeError('{} not initialized or multiple instances exist'.format(
-                cls.__name__))
+            raise RuntimeError(
+                f'{cls.__name__} not initialized or multiple instances exist'
+            )
 
     def _pooled(self):
         thr_name = current_thread().getName()
@@ -273,7 +276,7 @@ class Dispatcher(object):
                     break
                 continue
 
-            self.logger.debug('Processing Update: %s' % update)
+            self.logger.debug(f'Processing Update: {update}')
             self.process_update(update)
             self.update_queue.task_done()
 
@@ -294,7 +297,7 @@ class Dispatcher(object):
         total = len(threads)
 
         # Stop all threads in the thread pool by put()ting one non-tuple per thread
-        for i in range(total):
+        for _ in range(total):
             self.__async_queue.put(None)
 
         for i, thr in enumerate(threads):
@@ -324,33 +327,34 @@ class Dispatcher(object):
                 The update to process.
 
             """
-            if self.persistence and isinstance(update, Update):
-                if self.persistence.store_chat_data and update.effective_chat:
-                    chat_id = update.effective_chat.id
+            if not self.persistence or not isinstance(update, Update):
+                return
+            if self.persistence.store_chat_data and update.effective_chat:
+                chat_id = update.effective_chat.id
+                try:
+                    self.persistence.update_chat_data(chat_id,
+                                                      self.chat_data[chat_id])
+                except Exception as e:
                     try:
-                        self.persistence.update_chat_data(chat_id,
-                                                          self.chat_data[chat_id])
-                    except Exception as e:
-                        try:
-                            self.dispatch_error(update, e)
-                        except Exception:
-                            message = 'Saving chat data raised an error and an ' \
+                        self.dispatch_error(update, e)
+                    except Exception:
+                        message = 'Saving chat data raised an error and an ' \
                                       'uncaught error was raised while handling ' \
                                       'the error with an error_handler'
-                            self.logger.exception(message)
-                if self.persistence.store_user_data and update.effective_user:
-                    user_id = update.effective_user.id
+                        self.logger.exception(message)
+            if self.persistence.store_user_data and update.effective_user:
+                user_id = update.effective_user.id
+                try:
+                    self.persistence.update_user_data(user_id,
+                                                      self.user_data[user_id])
+                except Exception as e:
                     try:
-                        self.persistence.update_user_data(user_id,
-                                                          self.user_data[user_id])
-                    except Exception as e:
-                        try:
-                            self.dispatch_error(update, e)
-                        except Exception:
-                            message = 'Saving user data raised an error and an ' \
+                        self.dispatch_error(update, e)
+                    except Exception:
+                        message = 'Saving user data raised an error and an ' \
                                       'uncaught error was raised while handling ' \
                                       'the error with an error_handler'
-                            self.logger.exception(message)
+                        self.logger.exception(message)
 
         # An error happened while polling
         if isinstance(update, TelegramError):
@@ -426,13 +430,13 @@ class Dispatcher(object):
         if isinstance(handler, ConversationHandler) and handler.persistent:
             if not self.persistence:
                 raise ValueError(
-                    "Conversationhandler {} can not be persistent if dispatcher has no "
-                    "persistence".format(handler.name))
+                    f"Conversationhandler {handler.name} can not be persistent if dispatcher has no persistence"
+                )
             handler.conversations = self.persistence.get_conversations(handler.name)
             handler.persistence = self.persistence
 
         if group not in self.handlers:
-            self.handlers[group] = list()
+            self.handlers[group] = []
             self.groups.append(group)
             self.groups = sorted(self.groups)
 

@@ -290,12 +290,12 @@ class Message(TelegramObject):
         self.reply_to_message = reply_to_message
         self.edit_date = edit_date
         self.text = text
-        self.entities = entities or list()
-        self.caption_entities = caption_entities or list()
+        self.entities = entities or []
+        self.caption_entities = caption_entities or []
         self.audio = audio
         self.game = game
         self.document = document
-        self.photo = photo or list()
+        self.photo = photo or []
         self.sticker = sticker
         self.video = video
         self.voice = voice
@@ -304,10 +304,10 @@ class Message(TelegramObject):
         self.contact = contact
         self.location = location
         self.venue = venue
-        self.new_chat_members = new_chat_members or list()
+        self.new_chat_members = new_chat_members or []
         self.left_chat_member = left_chat_member
         self.new_chat_title = new_chat_title
-        self.new_chat_photo = new_chat_photo or list()
+        self.new_chat_photo = new_chat_photo or []
         self.delete_chat_photo = bool(delete_chat_photo)
         self.group_chat_created = bool(group_chat_created)
         self.supergroup_chat_created = bool(supergroup_chat_created)
@@ -341,7 +341,7 @@ class Message(TelegramObject):
         """:obj:`str`: Convenience property. If the chat of the message is a supergroup or a
         channel and has a :attr:`Chat.username`, returns a t.me link of the message."""
         if self.chat.type in (Chat.SUPERGROUP, Chat.CHANNEL) and self.chat.username:
-            return "https://t.me/{}/{}".format(self.chat.username, self.message_id)
+            return f"https://t.me/{self.chat.username}/{self.message_id}"
         return None
 
     @classmethod
@@ -408,13 +408,14 @@ class Message(TelegramObject):
         if self._effective_attachment is not _UNDEFINED:
             return self._effective_attachment
 
-        for i in Message.ATTACHMENT_TYPES:
-            if getattr(self, i, None):
-                self._effective_attachment = getattr(self, i)
-                break
-        else:
-            self._effective_attachment = None
-
+        self._effective_attachment = next(
+            (
+                getattr(self, i)
+                for i in Message.ATTACHMENT_TYPES
+                if getattr(self, i, None)
+            ),
+            None,
+        )
         return self._effective_attachment
 
     def __getitem__(self, item):
@@ -458,9 +459,8 @@ class Message(TelegramObject):
 
             del kwargs['quote']
 
-        else:
-            if self.chat.type != Chat.PRIVATE:
-                kwargs['reply_to_message_id'] = self.message_id
+        elif self.chat.type != Chat.PRIVATE:
+            kwargs['reply_to_message_id'] = self.message_id
 
     def reply_text(self, *args, **kwargs):
         """Shortcut for::
@@ -873,14 +873,12 @@ class Message(TelegramObject):
             :obj:`str`: The text of the given entity
 
         """
-        # Is it a narrow build, if so we don't need to convert
         if sys.maxunicode == 0xffff:
             return self.text[entity.offset:entity.offset + entity.length]
-        else:
-            entity_text = self.text.encode('utf-16-le')
-            entity_text = entity_text[entity.offset * 2:(entity.offset + entity.length) * 2]
+        entity_text = self.text.encode('utf-16-le')
+        entity_text = entity_text[entity.offset * 2:(entity.offset + entity.length) * 2]
 
-            return entity_text.decode('utf-16-le')
+        return entity_text.decode('utf-16-le')
 
     def parse_caption_entity(self, entity):
         """Returns the text from a given :class:`telegram.MessageEntity`.
@@ -898,14 +896,12 @@ class Message(TelegramObject):
             :obj:`str`: The text of the given entity
 
         """
-        # Is it a narrow build, if so we don't need to convert
         if sys.maxunicode == 0xffff:
             return self.caption[entity.offset:entity.offset + entity.length]
-        else:
-            entity_text = self.caption.encode('utf-16-le')
-            entity_text = entity_text[entity.offset * 2:(entity.offset + entity.length) * 2]
+        entity_text = self.caption.encode('utf-16-le')
+        entity_text = entity_text[entity.offset * 2:(entity.offset + entity.length) * 2]
 
-            return entity_text.decode('utf-16-le')
+        return entity_text.decode('utf-16-le')
 
     def parse_entities(self, types=None):
         """
@@ -974,7 +970,7 @@ class Message(TelegramObject):
         if message_text is None:
             return None
 
-        if not sys.maxunicode == 0xffff:
+        if sys.maxunicode != 0xFFFF:
             message_text = message_text.encode('utf-16-le')
 
         html_text = ''
@@ -984,19 +980,19 @@ class Message(TelegramObject):
             text = escape(text)
 
             if entity.type == MessageEntity.TEXT_LINK:
-                insert = '<a href="{}">{}</a>'.format(entity.url, text)
+                insert = f'<a href="{entity.url}">{text}</a>'
             elif entity.type == MessageEntity.TEXT_MENTION and entity.user:
-                insert = '<a href="tg://user?id={}">{}</a>'.format(entity.user.id, text)
+                insert = f'<a href="tg://user?id={entity.user.id}">{text}</a>'
             elif entity.type == MessageEntity.URL and urled:
                 insert = '<a href="{0}">{0}</a>'.format(text)
             elif entity.type == MessageEntity.BOLD:
-                insert = '<b>' + text + '</b>'
+                insert = f'<b>{text}</b>'
             elif entity.type == MessageEntity.ITALIC:
-                insert = '<i>' + text + '</i>'
+                insert = f'<i>{text}</i>'
             elif entity.type == MessageEntity.CODE:
-                insert = '<code>' + text + '</code>'
+                insert = f'<code>{text}</code>'
             elif entity.type == MessageEntity.PRE:
-                insert = '<pre>' + text + '</pre>'
+                insert = f'<pre>{text}</pre>'
             else:
                 insert = text
 
@@ -1073,7 +1069,7 @@ class Message(TelegramObject):
         if message_text is None:
             return None
 
-        if not sys.maxunicode == 0xffff:
+        if sys.maxunicode != 0xFFFF:
             message_text = message_text.encode('utf-16-le')
 
         markdown_text = ''
@@ -1083,19 +1079,19 @@ class Message(TelegramObject):
             text = escape_markdown(text)
 
             if entity.type == MessageEntity.TEXT_LINK:
-                insert = '[{}]({})'.format(text, entity.url)
+                insert = f'[{text}]({entity.url})'
             elif entity.type == MessageEntity.TEXT_MENTION and entity.user:
-                insert = '[{}](tg://user?id={})'.format(text, entity.user.id)
+                insert = f'[{text}](tg://user?id={entity.user.id})'
             elif entity.type == MessageEntity.URL and urled:
                 insert = '[{0}]({0})'.format(text)
             elif entity.type == MessageEntity.BOLD:
-                insert = '*' + text + '*'
+                insert = f'*{text}*'
             elif entity.type == MessageEntity.ITALIC:
-                insert = '_' + text + '_'
+                insert = f'_{text}_'
             elif entity.type == MessageEntity.CODE:
-                insert = '`' + text + '`'
+                insert = f'`{text}`'
             elif entity.type == MessageEntity.PRE:
-                insert = '```' + text + '```'
+                insert = f'```{text}```'
             else:
                 insert = text
             if sys.maxunicode == 0xffff:

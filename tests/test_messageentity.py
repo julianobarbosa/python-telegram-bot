@@ -26,9 +26,7 @@ from telegram import MessageEntity, User
                 params=MessageEntity.ALL_TYPES)
 def message_entity(request):
     type = request.param
-    url = None
-    if type == MessageEntity.TEXT_LINK:
-        url = 't.me'
+    url = 't.me' if type == MessageEntity.TEXT_LINK else None
     user = None
     if type == MessageEntity.TEXT_MENTION:
         user = User(1, 'test_user', False)

@@ -137,7 +137,7 @@ class InvertedFilter(BaseFilter):
         return not bool(self.f(update))
 
     def __repr__(self):
-        return "<inverted {}>".format(self.f)
+        return f"<inverted {self.f}>"
 
 
 class MergedFilter(BaseFilter):
@@ -189,30 +189,20 @@ class MergedFilter(BaseFilter):
         if self.and_filter:
             # And filter needs to short circuit if base is falsey
             if base_output:
-                comp_output = self.and_filter(update)
-                if comp_output:
+                if comp_output := self.and_filter(update):
                     if self.data_filter:
-                        merged = self._merge(base_output, comp_output)
-                        if merged:
+                        if merged := self._merge(base_output, comp_output):
                             return merged
                     return True
         elif self.or_filter:
-            # Or filter needs to short circuit if base is truthey
             if base_output:
-                if self.data_filter:
-                    return base_output
-                return True
-            else:
-                comp_output = self.or_filter(update)
-                if comp_output:
-                    if self.data_filter:
-                        return comp_output
-                    return True
+                return base_output if self.data_filter else True
+            if comp_output := self.or_filter(update):
+                return comp_output if self.data_filter else True
         return False
 
     def __repr__(self):
-        return "<{} {} {}>".format(self.base_filter, "and" if self.and_filter else "or",
-                                   self.and_filter or self.or_filter)
+        return f'<{self.base_filter} {"and" if self.and_filter else "or"} {self.and_filter or self.or_filter}>'
 
 
 class Filters(object):
@@ -286,13 +276,12 @@ class Filters(object):
             if isinstance(pattern, string_types):
                 pattern = re.compile(pattern)
             self.pattern = pattern
-            self.name = 'Filters.regex({})'.format(self.pattern)
+            self.name = f'Filters.regex({self.pattern})'
 
         def filter(self, message):
             """"""  # remove method from docs
             if message.text:
-                match = self.pattern.search(message.text)
-                if match:
+                if match := self.pattern.search(message.text):
                     return {'matches': [match]}
                 return {}
 
@@ -337,7 +326,7 @@ class Filters(object):
                 Args:
                     category (str, optional): category of the media you want to filter"""
                 self.category = category
-                self.name = "Filters.document.category('{}')".format(self.category)
+                self.name = f"Filters.document.category('{self.category}')"
 
             def filter(self, message):
                 """"""  # remove method from docs
@@ -369,7 +358,7 @@ class Filters(object):
                 Args:
                     filetype (str, optional): mime_type of the media you want to filter"""
                 self.mimetype = mimetype
-                self.name = "Filters.document.mime_type('{}')".format(self.mimetype)
+                self.name = f"Filters.document.mime_type('{self.mimetype}')"
 
             def filter(self, message):
                 """"""  # remove method from docs
@@ -730,7 +719,7 @@ officedocument.wordprocessingml.document")``-
 
         def __init__(self, entity_type):
             self.entity_type = entity_type
-            self.name = 'Filters.entity({})'.format(self.entity_type)
+            self.name = f'Filters.entity({self.entity_type})'
 
         def filter(self, message):
             """"""  # remove method from docs
@@ -752,7 +741,7 @@ officedocument.wordprocessingml.document")``-
 
         def __init__(self, entity_type):
             self.entity_type = entity_type
-            self.name = 'Filters.caption_entity({})'.format(self.entity_type)
+            self.name = f'Filters.caption_entity({self.entity_type})'
 
         def filter(self, message):
             """"""  # remove method from docs
@@ -848,7 +837,7 @@ officedocument.wordprocessingml.document")``-
         def filter(self, message):
             """"""  # remove method from docs
             if self.chat_ids is not None:
-                return bool(message.chat_id in self.chat_ids)
+                return message.chat_id in self.chat_ids
             else:
                 # self.usernames is not None
                 return bool(message.chat.username and message.chat.username in self.usernames)
@@ -898,16 +887,14 @@ officedocument.wordprocessingml.document")``-
         """
 
         def __init__(self, lang):
-            if isinstance(lang, string_types):
-                self.lang = [lang]
-            else:
-                self.lang = lang
-            self.name = 'Filters.language({})'.format(self.lang)
+            self.lang = [lang] if isinstance(lang, string_types) else lang
+            self.name = f'Filters.language({self.lang})'
 
         def filter(self, message):
             """"""  # remove method from docs
             return message.from_user.language_code and any(
-                [message.from_user.language_code.startswith(x) for x in self.lang])
+                message.from_user.language_code.startswith(x) for x in self.lang
+            )
 
     class msg_in(BaseFilter):
         """Filters messages to only allow those whose text/caption appears in a given list.
@@ -935,11 +922,7 @@ officedocument.wordprocessingml.document")``-
             self.name = 'Filters.msg_in({!r}, caption={!r})'.format(self.list_, self.caption)
 
         def filter(self, message):
-            if self.caption:
-                txt = message.caption
-            else:
-                txt = message.text
-
+            txt = message.caption if self.caption else message.text
             return txt in self.list_
 
     class _UpdateType(BaseFilter):

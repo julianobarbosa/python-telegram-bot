@@ -95,7 +95,7 @@ class DelayQueue(threading.Thread):
         self.__exit_req = False  # flag to gently exit thread
         self.__class__._instcnt += 1
         if name is None:
-            name = '%s-%s' % (self.__class__.__name__, self.__class__._instcnt)
+            name = f'{self.__class__.__name__}-{self.__class__._instcnt}'
         super(DelayQueue, self).__init__(name=name)
         self.daemon = False
         if autostart:  # immediately start processing

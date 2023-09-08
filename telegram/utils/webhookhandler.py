@@ -104,7 +104,7 @@ class WebhookHandler(tornado.web.RequestHandler):
         json_string = bytes_to_native_str(self.request.body)
         data = json.loads(json_string)
         self.set_status(200)
-        self.logger.debug('Webhook received data: ' + json_string)
+        self.logger.debug(f'Webhook received data: {json_string}')
         update = Update.de_json(data, self.bot)
         self.logger.debug('Received Update with ID %d on Webhook' % update.update_id)
         self.update_queue.put(update)
@@ -129,5 +129,7 @@ class WebhookHandler(tornado.web.RequestHandler):
 
         """
         super(WebhookHandler, self).write_error(status_code, **kwargs)
-        self.logger.debug("%s - - %s" % (self.request.remote_ip, "Exception in WebhookHandler"),
-                          exc_info=kwargs['exc_info'])
+        self.logger.debug(
+            f"{self.request.remote_ip} - - Exception in WebhookHandler",
+            exc_info=kwargs['exc_info'],
+        )

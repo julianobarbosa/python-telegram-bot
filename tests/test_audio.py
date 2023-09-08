@@ -26,9 +26,8 @@ from telegram import Audio, TelegramError, Voice
 
 @pytest.fixture(scope='function')
 def audio_file():
-    f = open('tests/data/telegram.mp3', 'rb')
-    yield f
-    f.close()
+    with open('tests/data/telegram.mp3', 'rb') as f:
+        yield f
 
 
 @pytest.fixture(scope='class')
